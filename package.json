@@ -1,5 +1,30 @@
 {
   "dependencies": {
-    "express": "^5.1.0"
-  }
+    "cloudinary": "^2.7.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "mysql2": "^3.15.1",
+    "streamifier": "^0.1.1"
+  },
+  "name": "music",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KarthikBytes/MP.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KarthikBytes/MP/issues"
+  },
+  "homepage": "https://github.com/KarthikBytes/MP#readme"
 }
