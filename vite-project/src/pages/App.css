@@ -1,3 +1,40 @@
+/* Notion-inspired Music Stream App Styles with Theme Toggle */
+
+:root {
+  /* Light Theme (Default) */
+  --notion-bg: #ffffff;
+  --notion-bg-secondary: #f7f6f3;
+  --notion-bg-hover: #f1f0ed;
+  --notion-border: #e9e9e7;
+  --notion-text: #37352f;
+  --notion-text-light: #787774;
+  --notion-text-lighter: #9b9a97;
+  --notion-primary: #2383e2;
+  --notion-primary-hover: #1a6fc7;
+  --notion-success: #0f7b6c;
+  --notion-error: #eb5757;
+  --notion-shadow: rgba(15, 15, 15, 0.05);
+  --notion-shadow-hover: rgba(15, 15, 15, 0.1);
+  --transition: all 0.15s ease;
+}
+
+/* Dark Theme */
+[data-theme="dark"] {
+  --notion-bg: #191919;
+  --notion-bg-secondary: #2f2f2f;
+  --notion-bg-hover: #3a3a3a;
+  --notion-border: #3e3e3e;
+  --notion-text: #e8e8e7;
+  --notion-text-light: #9b9a97;
+  --notion-text-lighter: #6f6f6f;
+  --notion-primary: #529cca;
+  --notion-primary-hover: #6db3d8;
+  --notion-success: #2ea591;
+  --notion-error: #ff6b6b;
+  --notion-shadow: rgba(0, 0, 0, 0.3);
+  --notion-shadow-hover: rgba(0, 0, 0, 0.5);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -5,267 +42,368 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
-  color: #333;
-  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--notion-bg-secondary);
+  color: var(--notion-text);
+  line-height: 1.5;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .app {
   min-height: 100vh;
-  padding: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
+/* Header */
 .app-header {
-  background: rgba(255, 255, 255, 0.95);
-  padding: 20px 30px;
-  border-radius: 15px;
-  margin-bottom: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
+  background: var(--notion-bg);
+  border-bottom: 1px solid var(--notion-border);
+  padding: 16px 40px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 2px var(--notion-shadow);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+}
+
+.app-header .header-left {
+  flex: 1;
 }
 
 .app-header h1 {
-  color: #764ba2;
-  font-size: 2.5em;
+  font-size: 24px;
   font-weight: 700;
+  color: var(--notion-text);
+  margin-bottom: 16px;
 }
 
 .app-header nav {
   display: flex;
-  gap: 15px;
+  gap: 8px;
 }
 
-.app-header button {
-  padding: 12px 24px;
+.app-header nav button {
+  padding: 6px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--notion-text-light);
+  background: transparent;
   border: none;
-  border-radius: 25px;
-  background: #f0f0f0;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 16px;
-  font-weight: 600;
+  transition: var(--transition);
 }
 
-.app-header button.active {
-  background: #764ba2;
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(118, 75, 162, 0.3);
+.app-header nav button:hover {
+  background: var(--notion-bg-hover);
+  color: var(--notion-text);
 }
 
-.app-header button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.app-header nav button.active {
+  background: var(--notion-bg-hover);
+  color: var(--notion-text);
 }
 
+/* Theme Toggle Button */
+.theme-toggle {
+  padding: 8px 12px;
+  font-size: 20px;
+  background: var(--notion-bg-hover);
+  border: 1px solid var(--notion-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.theme-toggle:hover {
+  background: var(--notion-bg-secondary);
+  transform: scale(1.05);
+}
+
+/* Main Content */
 .main-content {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 15px;
-  padding: 30px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-  min-height: 60vh;
+  flex: 1;
+  padding: 40px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
 }
 
-/* Song List Styles */
+/* Song List */
+.song-list {
+  background: var(--notion-bg);
+  border-radius: 8px;
+  padding: 32px;
+  box-shadow: 0 1px 3px var(--notion-shadow);
+}
+
 .song-list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
-  flex-wrap: wrap;
-  gap: 20px;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--notion-border);
 }
 
 .song-list-header h2 {
-  color: #333;
-  font-size: 2em;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--notion-text);
 }
 
 .mood-filter {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .mood-filter label {
-  font-weight: 600;
-  color: #555;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--notion-text-light);
 }
 
 .mood-filter select {
-  padding: 8px 15px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
+  padding: 6px 32px 6px 12px;
   font-size: 14px;
+  color: var(--notion-text);
+  background: var(--notion-bg-secondary);
+  border: 1px solid var(--notion-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--transition);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23787774' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
 }
 
+[data-theme="dark"] .mood-filter select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239b9a97' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+}
+
+.mood-filter select:hover,
+.mood-filter select:focus {
+  background-color: var(--notion-bg-hover);
+  border-color: var(--notion-text-lighter);
+  outline: none;
+}
+
+/* Songs Grid */
 .songs-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-  gap: 25px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
 }
 
 .song-card {
-  background: white;
-  border-radius: 12px;
-  padding: 25px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  border-left: 4px solid #764ba2;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+  background: var(--notion-bg-secondary);
+  border: 1px solid var(--notion-border);
+  border-radius: 8px;
+  padding: 20px;
+  transition: var(--transition);
 }
 
 .song-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-color: var(--notion-text-lighter);
+  box-shadow: 0 2px 8px var(--notion-shadow-hover);
+  transform: translateY(-2px);
 }
 
 .song-header {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 .mood-badge {
-  font-size: 1.5em;
-  padding: 5px;
-  border-radius: 8px;
-  background: #f8f9fa;
+  font-size: 20px;
+  flex-shrink: 0;
 }
 
-.song-header h3 {
-  color: #333;
+.song-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--notion-text);
   margin: 0;
-  font-size: 1.3em;
-  flex: 1;
+  line-height: 1.3;
 }
 
 .song-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  margin-bottom: 16px;
 }
 
-.artist {
-  color: #764ba2;
-  font-weight: 600;
-  font-size: 1.1em;
-  margin: 0;
+.song-info p {
+  font-size: 13px;
+  color: var(--notion-text-light);
+  margin: 6px 0;
 }
 
-.album {
-  color: #666;
-  font-weight: 500;
-  margin: 0;
-}
-
-.meta {
-  color: #888;
-  font-size: 0.9em;
-  margin: 0;
+.song-info .meta {
+  font-size: 12px;
+  color: var(--notion-text-lighter);
 }
 
 .song-actions {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: auto;
+  gap: 10px;
 }
 
 .play-btn {
-  background: #764ba2;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
   color: white;
+  background: var(--notion-primary);
   border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 600;
-  text-align: center;
+  transition: var(--transition);
 }
 
 .play-btn:hover {
-  background: #5a3780;
-  transform: scale(1.05);
+  background: var(--notion-primary-hover);
 }
 
 .audio-preview {
   width: 100%;
-  height: 40px;
-  border-radius: 8px;
+  height: 32px;
+  border-radius: 6px;
 }
 
-.no-songs {
-  text-align: center;
-  padding: 60px 20px;
-  color: #666;
-  font-size: 1.2em;
+.audio-preview::-webkit-media-controls-panel {
+  background-color: var(--notion-bg);
 }
 
-/* Upload Form Styles */
+/* Upload Form */
 .upload-form {
+  background: var(--notion-bg);
+  border-radius: 8px;
+  padding: 32px;
+  box-shadow: 0 1px 3px var(--notion-shadow);
   max-width: 700px;
-  margin: 0 auto;
+}
+
+.upload-form h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--notion-text);
+  margin-bottom: 24px;
+}
+
+.debug-buttons {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.test-btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.test-btn:hover {
+  opacity: 0.9;
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 25px;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 20px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
+  gap: 8px;
   position: relative;
 }
 
 .form-group label {
-  margin-bottom: 8px;
-  font-weight: 600;
-  color: #555;
-  font-size: 1em;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--notion-text);
 }
 
-.form-group input,
+.form-group input[type="text"],
+.form-group input[type="number"],
 .form-group select {
-  padding: 14px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: border-color 0.3s ease;
-  background: white;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--notion-text);
+  background: var(--notion-bg);
+  border: 1px solid var(--notion-border);
+  border-radius: 6px;
+  transition: var(--transition);
 }
 
-.form-group input:focus,
+.form-group input[type="text"]:hover,
+.form-group input[type="number"]:hover,
+.form-group select:hover {
+  border-color: var(--notion-text-lighter);
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="number"]:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #764ba2;
-  box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.1);
+  border-color: var(--notion-primary);
+  box-shadow: 0 0 0 3px rgba(35, 131, 226, 0.1);
+}
+
+[data-theme="dark"] .form-group input:focus,
+[data-theme="dark"] .form-group select:focus {
+  box-shadow: 0 0 0 3px rgba(82, 156, 202, 0.2);
+}
+
+.form-group input[type="file"] {
+  padding: 10px;
+  font-size: 14px;
+  color: var(--notion-text);
+  background: var(--notion-bg-secondary);
+  border: 2px dashed var(--notion-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.form-group input[type="file"]:hover {
+  border-color: var(--notion-primary);
+  background: var(--notion-bg-hover);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
 
 .file-info {
-  margin-top: 8px;
+  font-size: 13px;
+  color: var(--notion-text-light);
   padding: 8px 12px;
-  background: #f8f9fa;
+  background: var(--notion-bg-secondary);
   border-radius: 6px;
-  font-size: 0.9em;
-  color: #666;
-  border-left: 3px solid #764ba2;
+  margin-top: 4px;
 }
 
 .suggestions-dropdown {
@@ -273,382 +411,366 @@ body {
   top: 100%;
   left: 0;
   right: 0;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  background: var(--notion-bg);
+  border: 1px solid var(--notion-border);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px var(--notion-shadow-hover);
   max-height: 200px;
   overflow-y: auto;
-  z-index: 1000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  margin-top: 5px;
+  z-index: 10;
+  margin-top: 4px;
 }
 
 .suggestion-item {
-  padding: 12px 15px;
-  cursor: pointer;
-  border-bottom: 1px solid #f0f0f0;
-  transition: background 0.2s ease;
+  padding: 10px 12px;
   font-size: 14px;
+  color: var(--notion-text);
+  cursor: pointer;
+  transition: var(--transition);
 }
 
 .suggestion-item:hover {
-  background: #f8f9fa;
-}
-
-.suggestion-item:last-child {
-  border-bottom: none;
+  background: var(--notion-bg-hover);
 }
 
 .upload-btn {
-  background: #764ba2;
-  color: white;
-  border: none;
-  padding: 16px 32px;
-  border-radius: 8px;
-  font-size: 18px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 10px;
+  padding: 10px 20px;
+  font-size: 14px;
   font-weight: 600;
+  color: white;
+  background: var(--notion-primary);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: 8px;
 }
 
 .upload-btn:hover:not(:disabled) {
-  background: #5a3780;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(118, 75, 162, 0.3);
+  background: var(--notion-primary-hover);
 }
 
 .upload-btn:disabled {
-  background: #ccc;
+  opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
 }
 
 .message {
-  padding: 15px;
-  border-radius: 8px;
-  margin-top: 20px;
-  text-align: center;
-  font-weight: 500;
-  font-size: 1em;
+  padding: 12px 16px;
+  font-size: 14px;
+  border-radius: 6px;
+  margin-top: 16px;
 }
 
 .message.success {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
+  color: var(--notion-success);
+  background: rgba(15, 123, 108, 0.1);
+  border: 1px solid rgba(15, 123, 108, 0.2);
+}
+
+[data-theme="dark"] .message.success {
+  background: rgba(46, 165, 145, 0.15);
+  border: 1px solid rgba(46, 165, 145, 0.3);
 }
 
 .message.error {
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+  color: var(--notion-error);
+  background: rgba(235, 87, 87, 0.1);
+  border: 1px solid rgba(235, 87, 87, 0.2);
+}
+
+[data-theme="dark"] .message.error {
+  background: rgba(255, 107, 107, 0.15);
+  border: 1px solid rgba(255, 107, 107, 0.3);
 }
 
 .upload-info {
-  margin-top: 40px;
-  padding: 25px;
-  background: #f8f9fa;
-  border-radius: 12px;
-  border-left: 4px solid #764ba2;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--notion-border);
 }
 
-.upload-info h3 {
-  margin-bottom: 15px;
-  color: #333;
-  font-size: 1.3em;
+.upload-info h3,
+.upload-info h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--notion-text);
+  margin-bottom: 12px;
+  margin-top: 16px;
+}
+
+.upload-info h3:first-child {
+  margin-top: 0;
 }
 
 .upload-info ul {
   list-style: none;
-  padding-left: 0;
+  padding: 0;
 }
 
 .upload-info li {
-  padding: 8px 0;
-  color: #666;
-  position: relative;
+  font-size: 13px;
+  color: var(--notion-text-light);
+  padding: 6px 0;
   padding-left: 20px;
+  position: relative;
 }
 
-.upload-info li:before {
+.upload-info li::before {
   content: "•";
-  color: #764ba2;
-  font-weight: bold;
   position: absolute;
-  left: 0;
-  font-size: 1.2em;
+  left: 8px;
+  color: var(--notion-text-lighter);
 }
 
-/* Player Styles */
+/* Player */
 .player {
   position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 600px;
-  background: rgba(255, 255, 255, 0.98);
-  border-radius: 15px;
-  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(20px);
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--notion-bg);
+  border-top: 1px solid var(--notion-border);
+  box-shadow: 0 -2px 16px var(--notion-shadow);
   z-index: 1000;
-  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .player-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid #eee;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--notion-border);
 }
 
 .player-header h3 {
-  color: #764ba2;
-  margin: 0;
-  font-size: 1.4em;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--notion-text);
 }
 
 .close-btn {
-  background: none;
+  padding: 4px 10px;
+  font-size: 16px;
+  color: var(--notion-text-light);
+  background: transparent;
   border: none;
-  font-size: 1.5em;
+  border-radius: 4px;
   cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  transition: background 0.3s ease;
-  color: #666;
+  transition: var(--transition);
 }
 
 .close-btn:hover {
-  background: #f0f0f0;
-  color: #333;
+  background: var(--notion-bg-hover);
+  color: var(--notion-text);
 }
 
 .player-content {
-  padding: 25px;
+  padding: 20px 24px;
 }
 
 .song-details {
-  text-align: center;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
 .song-details h4 {
-  font-size: 1.5em;
-  margin-bottom: 10px;
-  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--notion-text);
+  margin-bottom: 8px;
 }
 
 .song-details p {
-  color: #666;
-  margin: 5px 0;
+  font-size: 13px;
+  color: var(--notion-text-light);
+  margin: 4px 0;
 }
 
 .player-controls {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .progress-bar {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 12px;
 }
 
 .time {
-  font-size: 0.9em;
-  color: #666;
+  font-size: 12px;
+  color: var(--notion-text-lighter);
   min-width: 40px;
   font-variant-numeric: tabular-nums;
 }
 
-.seek-container {
-  flex: 1;
-  position: relative;
+.time.current {
+  text-align: right;
 }
 
-.seek-bar {
+.seek-container {
+  flex: 1;
+}
+
+.seek-bar,
+.volume-bar {
   width: 100%;
-  height: 6px;
-  border-radius: 3px;
+  height: 4px;
+  border-radius: 2px;
   outline: none;
   cursor: pointer;
   -webkit-appearance: none;
+  appearance: none;
 }
 
-.seek-bar::-webkit-slider-thumb {
+.seek-bar::-webkit-slider-thumb,
+.volume-bar::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
+  appearance: none;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  background: #764ba2;
+  background: var(--notion-primary);
   cursor: pointer;
-  border: 2px solid white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: var(--transition);
 }
 
-.seek-bar::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+.seek-bar::-webkit-slider-thumb:hover,
+.volume-bar::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.seek-bar::-moz-range-thumb,
+.volume-bar::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  background: #764ba2;
+  background: var(--notion-primary);
   cursor: pointer;
-  border: 2px solid white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: none;
+  transition: var(--transition);
+}
+
+.seek-bar::-moz-range-thumb:hover,
+.volume-bar::-moz-range-thumb:hover {
+  transform: scale(1.2);
 }
 
 .control-buttons {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  gap: 20px;
 }
 
 .play-pause-btn {
-  background: #764ba2;
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 25px;
-  font-size: 1.1em;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  padding: 10px 24px;
+  font-size: 14px;
   font-weight: 600;
+  color: white;
+  background: var(--notion-primary);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--transition);
 }
 
 .play-pause-btn:hover {
-  background: #5a3780;
-  transform: scale(1.05);
+  background: var(--notion-primary-hover);
 }
 
 .volume-control {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex: 1;
+  max-width: 200px;
 }
 
-.volume-bar {
-  width: 100px;
-  height: 6px;
-  border-radius: 3px;
-  background: #e0e0e0;
-  outline: none;
-  cursor: pointer;
-  -webkit-appearance: none;
-}
-
-.volume-bar::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #764ba2;
-  cursor: pointer;
+.volume-control span:first-child {
+  font-size: 18px;
 }
 
 .volume-text {
-  font-size: 0.9em;
-  color: #666;
-  min-width: 40px;
-  text-align: center;
+  font-size: 12px;
+  color: var(--notion-text-lighter);
+  min-width: 35px;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Loading and Error States */
-.loading, .error {
+.loading,
+.error,
+.no-songs {
   text-align: center;
   padding: 60px 20px;
-  font-size: 1.2em;
-  border-radius: 12px;
-  margin: 20px 0;
-}
-
-.loading {
-  background: #e3f2fd;
-  color: #1976d2;
-  border: 1px solid #bbdefb;
+  font-size: 14px;
+  color: var(--notion-text-light);
 }
 
 .error {
-  background: #ffebee;
-  color: #c62828;
-  border: 1px solid #ffcdd2;
+  color: var(--notion-error);
+}
+
+.no-songs p {
+  font-size: 15px;
+  color: var(--notion-text-light);
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .app {
-    padding: 15px;
-  }
-
   .app-header {
-    flex-direction: column;
-    gap: 15px;
-    text-align: center;
-    padding: 20px;
-  }
-
-  .app-header nav {
-    width: 100%;
-    justify-content: center;
+    padding: 12px 20px;
   }
 
   .main-content {
     padding: 20px;
   }
 
-  .song-list-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 15px;
+  .song-list,
+  .upload-form {
+    padding: 20px;
   }
 
   .songs-grid {
     grid-template-columns: 1fr;
   }
 
+  .song-list-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
   .form-row {
     grid-template-columns: 1fr;
   }
 
-  .player {
-    width: 95%;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-
   .control-buttons {
     flex-direction: column;
-    gap: 15px;
-    align-items: stretch;
-  }
-
-  .play-pause-btn {
-    order: -1;
   }
 
   .volume-control {
-    justify-content: center;
+    max-width: 100%;
   }
 }
 
-@media (max-width: 480px) {
-  .app-header h1 {
-    font-size: 2em;
-  }
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
 
-  .song-list-header h2 {
-    font-size: 1.6em;
-  }
+::-webkit-scrollbar-track {
+  background: var(--notion-bg-secondary);
+}
 
-  .player-content {
-    padding: 20px;
-  }
+::-webkit-scrollbar-thumb {
+  background: var(--notion-border);
+  border-radius: 4px;
+}
 
-  .song-details h4 {
-    font-size: 1.3em;
-  }
+::-webkit-scrollbar-thumb:hover {
+  background: var(--notion-text-lighter);
 }
