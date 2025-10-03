@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-
 function SongList({ onSongSelect }) {
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -9,14 +8,9 @@ function SongList({ onSongSelect }) {
   const moods = [
     { value: 'all', label: 'All Moods' },
     { value: 'love', label: '💖 Love' },
-    { value: 'happy', label: '😊 Happy' },
-    { value: 'sad', label: '😢 Sad' },
-    { value: 'energetic', label: '⚡ Energetic' },
-    { value: 'relaxed', label: '😌 Relaxed' },
-    { value: 'romantic', label: '🌹 Romantic' },
-    { value: 'party', label: '🎉 Party' },
-    { value: 'workout', label: '💪 Workout' },
-    { value: 'chill', label: '🌴 Chill' }
+    { value: 'sadness', label: '😢 Sadness' },
+    { value: 'old_melody', label: '🎶 Old Melody' },
+    { value: 'energy', label: '⚡ Energy' }
   ];
 
   useEffect(() => {
@@ -26,10 +20,10 @@ function SongList({ onSongSelect }) {
   const fetchSongs = async () => {
     try {
       setLoading(true);
-      const url = filterMood === 'all' 
-        ? "http://localhost:5000/songs" 
+      const url = filterMood === 'all'
+        ? "http://localhost:5000/songs"
         : `http://localhost:5000/songs/${filterMood}`;
-      
+
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch songs');
       const data = await response.json();
@@ -53,11 +47,10 @@ function SongList({ onSongSelect }) {
     <div className="song-list">
       <div className="song-list-header">
         <h2>🎵 All Songs ({songs.length})</h2>
-        
         <div className="mood-filter">
           <label>Filter by Mood:</label>
-          <select 
-            value={filterMood} 
+          <select
+            value={filterMood}
             onChange={(e) => setFilterMood(e.target.value)}
           >
             {moods.map(mood => (
@@ -68,34 +61,32 @@ function SongList({ onSongSelect }) {
           </select>
         </div>
       </div>
-      
+
       <div className="songs-grid">
         {songs.map(song => (
           <div key={song.id} className="song-card">
             <div className="song-header">
-              <span className="mood-badge">{getMoodEmoji(song.mood)}</span>
+              <span>{getMoodEmoji(song.mood)}</span>
               <h3>{song.title}</h3>
             </div>
-            
+
             <div className="song-info">
-              <p className="artist">🎤 {song.artist}</p>
-              <p className="album">💿 {song.album || 'Single'}</p>
-              <p className="meta">
+              <p>🎤 {song.artist}</p>
+              <p>💿 {song.album || 'Single'}</p>
+              <p>
                 🎵 {song.genre} • ⏱️ {formatDuration(song.duration)}
               </p>
             </div>
-            
+
             <div className="song-actions">
-              <button 
-                className="play-btn"
+              <button
                 onClick={() => onSongSelect(song)}
               >
-                ▶ Play Full Song
+                Play Full Song
               </button>
-              <audio 
-                controls 
+              <audio
+                controls
                 src={song.url}
-                className="audio-preview"
               >
                 Your browser does not support audio.
               </audio>

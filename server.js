@@ -5,6 +5,9 @@ import streamifier from "streamifier";
 import { v2 as cloudinary } from "cloudinary";
 import cors from "cors";
 import dotenv from "dotenv";
+import { exec } from "child_process";
+import fs from "fs";
+import path from "path";
 
 dotenv.config();
 const app = express();
@@ -37,131 +40,110 @@ const upload = multer({
   }
 });
 
-// ✅ Get all artists
-app.get("/artists", async (req, res) => {
-  try {
-    const [rows] = await db.query("SELECT * FROM artists ORDER BY name");
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ✅ Get all albums
-app.get("/albums", async (req, res) => {
-  try {
-    const [rows] = await db.query(`
-      SELECT a.*, ar.name as artist_name 
-      FROM albums a 
-      JOIN artists ar ON a.artist_id = ar.id 
-      ORDER BY a.title
-    `);
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ✅ Search artists
-app.get("/artists/search", async (req, res) => {
-  try {
-    const { q } = req.query;
-    const [rows] = await db.query(
-      "SELECT id, name FROM artists WHERE name LIKE ? LIMIT 10",
-      [`%${q}%`]
-    );
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ✅ Search albums
-app.get("/albums/search", async (req, res) => {
-  try {
-    const { q } = req.query;
-    const [rows] = await db.query(
-      "SELECT id, title FROM albums WHERE title LIKE ? LIMIT 10",
-      [`%${q}%`]
-    );
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ✅ Create new artist
-app.post("/artists", async (req, res) => {
-  try {
-    const { name } = req.body;
-    const [result] = await db.query(
-      "INSERT INTO artists (name) VALUES (?)",
-      [name]
-    );
-    res.json({ id: result.insertId, name, message: "Artist created successfully" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ✅ Create new album
-app.post("/albums", async (req, res) => {
-  try {
-    const { title, artist_id, release_year } = req.body;
-    const [result] = await db.query(
-      "INSERT INTO albums (title, artist_id, release_year) VALUES (?, ?, ?)",
-      [title, artist_id, release_year]
-    );
-    res.json({ id: result.insertId, message: "Album created successfully" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ✅ Upload song using artist name and album name
-app.post("/upload", upload.single("song"), async (req, res) => {
-  console.log("📥 Upload request received");
+// ✅ Mood-based simple upload endpoint
+app.post("/upload-simple", upload.single("song"), async (req, res) => {
+  console.log("📥 Simple upload request received");
   console.log("File:", req.file ? `✅ ${req.file.originalname} (${req.file.size} bytes)` : "❌ No file");
   console.log("Body:", req.body);
 
   try {
     const file = req.file;
-    const { title, artist_name, album_name, genre, duration, mood } = req.body;
+    const { mood, title, youtubeUrl } = req.body;
 
-    if (!file) {
-      console.log("❌ No file uploaded");
-      return res.status(400).json({ error: "No file uploaded" });
+    // Restrict moods to only allowed values
+    const validMoods = ['love', 'sadness', 'old_melody', 'energy'];
+    const songMood = validMoods.includes(mood?.toLowerCase()) ? mood.toLowerCase() : null;
+
+    if (!mood || !songMood) {
+      return res.status(400).json({ error: "Mood category is required and must be one of: Love, Sadness, Old Melody, Energy" });
     }
 
-    // Validate required fields
-    if (!title || !artist_name || !genre || !duration) {
-      console.log("❌ Missing required fields");
-      return res.status(400).json({
-        error: "Missing required fields: title, artist_name, genre, duration"
-      });
+    // --- YOUTUBE LINK HANDLING ---
+    if (youtubeUrl && youtubeUrl.trim()) {
+      // Improved video ID extraction for various YouTube URL formats
+      let videoId = null;
+      if (youtubeUrl.includes("v=")) {
+        videoId = youtubeUrl.split("v=")[1]?.split("&")[0];
+      } else if (youtubeUrl.includes("youtu.be/")) {
+        videoId = youtubeUrl.split("youtu.be/")[1]?.split("?")[0];
+      }
+      if (!videoId) {
+        return res.status(400).json({ error: "Invalid YouTube URL" });
+      }
+
+      console.log("📺 YouTube video ID extracted:", videoId);
+
+      // Download YouTube video as audio
+      const downloadDir = path.join(__dirname, "downloads");
+      if (!fs.existsSync(downloadDir)) fs.mkdirSync(downloadDir);
+      const downloadPath = path.join(downloadDir, `${videoId}.mp3`);
+
+      try {
+        await new Promise((resolve, reject) => {
+          require("ytdl-core")(`https://www.youtube.com/watch?v=${videoId}`, { filter: 'audioonly' })
+            .pipe(fs.createWriteStream(downloadPath))
+            .on("finish", resolve)
+            .on("error", reject);
+        });
+        console.log("✅ YouTube audio downloaded:", downloadPath);
+
+        // Upload the downloaded audio file to Cloudinary
+        const uploadResult = await cloudinary.uploader.upload(downloadPath, {
+          resource_type: "video",
+          folder: `music-journal/${songMood}`,
+          use_filename: true,
+          unique_filename: true
+        });
+
+        console.log("✅ Cloudinary upload successful:", uploadResult.secure_url);
+
+        // Clean up the downloaded file
+        fs.unlinkSync(downloadPath);
+        console.log("🗑️ Temporary file deleted:", downloadPath);
+
+        // Respond with the uploaded song details
+        return res.json({
+          message: `Song successfully added to ${songMood} journal!`,
+          song: {
+            id: null,
+            title: title || `YouTube Video - ${videoId}`,
+            mood: songMood,
+            artist: "YouTube",
+            genre: "YouTube",
+            url: uploadResult.secure_url
+          }
+        });
+
+      } catch (err) {
+        console.error("❌ YouTube download/upload error:", err);
+        return res.status(500).json({ error: "Failed to process YouTube video" });
+      }
+    }
+
+    // --- MP3 FILE HANDLING ---
+    if (!file) {
+      return res.status(400).json({ error: "❌ No file uploaded or YouTube link provided" });
     }
 
     // Validate file type
-    const allowedTypes = ['audio/mpeg', 'audio/wav', 'audio/mp4', 'audio/flac', 'audio/aac'];
+    const allowedTypes = ['audio/mpeg', 'audio/wav', 'audio/mp4', 'audio/flac', 'audio/aac', 'audio/ogg'];
     if (!allowedTypes.includes(file.mimetype)) {
       console.log("❌ Invalid file type:", file.mimetype);
       return res.status(400).json({
-        error: `Invalid file type: ${file.mimetype}. Supported types: MP3, WAV, M4A, FLAC, AAC`
+        error: `Invalid file type: ${file.mimetype}. Supported types: MP3, WAV, M4A, FLAC, AAC, OGG`
       });
     }
 
-    // Validate mood
-    const validMoods = ['love', 'happy', 'sad', 'energetic', 'relaxed', 'romantic', 'party', 'workout', 'chill'];
-    const songMood = validMoods.includes(mood?.toLowerCase()) ? mood.toLowerCase() : 'other';
+    console.log("🌤️ Starting Cloudinary upload to mood folder:", songMood);
 
-    console.log("🌤️ Starting Cloudinary upload...");
-
-    // Upload to Cloudinary
+    // Upload to Cloudinary with mood-based folder
     const uploadPromise = new Promise((resolve, reject) => {
       const cldStream = cloudinary.uploader.upload_stream(
         {
-          resource_type: "video",
-          folder: `songs/${songMood}`
+          resource_type: "video", // Use 'video' for audio files in Cloudinary
+          folder: `music-journal/${songMood}`,
+          use_filename: true,
+          unique_filename: true
         },
         async (error, result) => {
           if (error) {
@@ -177,64 +159,52 @@ app.post("/upload", upload.single("song"), async (req, res) => {
             connection = await db.getConnection();
             await connection.beginTransaction();
 
-            // 1. Find or create artist
+            // Generate title from filename if not provided
+            const songTitle = title || file.originalname.replace(/\.[^/.]+$/, "");
+
+            // Use "Unknown Artist" and auto-detect genre
+            const artistName = "Unknown Artist";
+            const autoGenre = "Auto-detected";
+
+            // 1. Find or create "Unknown Artist"
             let [artistRows] = await connection.query(
               "SELECT id FROM artists WHERE name = ?",
-              [artist_name]
+              [artistName]
             );
 
             let artistId;
             if (artistRows.length > 0) {
               artistId = artistRows[0].id;
-              console.log("🎤 Found existing artist:", artist_name, "ID:", artistId);
+              console.log("🎤 Found existing artist:", artistName, "ID:", artistId);
             } else {
-              // Create new artist
+              // Create "Unknown Artist"
               const [artistResult] = await connection.query(
                 "INSERT INTO artists (name) VALUES (?)",
-                [artist_name]
+                [artistName]
               );
               artistId = artistResult.insertId;
-              console.log("🎤 Created new artist:", artist_name, "ID:", artistId);
+              console.log("🎤 Created new artist:", artistName, "ID:", artistId);
             }
 
-            // 2. Find or create album (if provided)
-            let albumId = null;
-            if (album_name && album_name.trim() !== '') {
-              let [albumRows] = await connection.query(
-                "SELECT id FROM albums WHERE title = ? AND artist_id = ?",
-                [album_name, artistId]
-              );
-
-              if (albumRows.length > 0) {
-                albumId = albumRows[0].id;
-                console.log("💿 Found existing album:", album_name, "ID:", albumId);
-              } else {
-                // Create new album
-                const [albumResult] = await connection.query(
-                  "INSERT INTO albums (title, artist_id) VALUES (?, ?)",
-                  [album_name, artistId]
-                );
-                albumId = albumResult.insertId;
-                console.log("💿 Created new album:", album_name, "ID:", albumId);
-              }
-            }
-
-            // 3. Insert song
+            // 2. Insert song with minimal info
             const [songResult] = await connection.query(
-              "INSERT INTO songs (title, artist_id, album_id, genre, duration, mood, url, public_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-              [title, artistId, albumId, genre, duration, songMood, result.secure_url, result.public_id]
+              "INSERT INTO songs (title, artist_id, genre, duration, mood, url, public_id, album_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+              [songTitle, artistId, autoGenre, 0, songMood, result.secure_url, result.public_id, null]
             );
 
             await connection.commit();
             console.log("✅ Song saved to database, ID:", songResult.insertId);
 
             const successResponse = {
-              message: "Song uploaded successfully!",
-              url: result.secure_url,
-              mood: songMood,
-              artist: artist_name,
-              album: album_name || 'Single',
-              songId: songResult.insertId
+              message: `Song successfully added to ${songMood} journal!`,
+              song: {
+                id: songResult.insertId,
+                title: songTitle,
+                mood: songMood,
+                artist: artistName,
+                genre: autoGenre,
+                url: result.secure_url
+              }
             };
 
             resolve(successResponse);
@@ -264,10 +234,92 @@ app.post("/upload", upload.single("song"), async (req, res) => {
     res.json(result);
 
   } catch (err) {
-    console.log("❌ Upload error:", err);
+    console.log("❌ Simple upload error:", err);
     res.status(500).json({
       error: err.message || "Upload failed due to server error"
     });
+  }
+});
+
+// ✅ Delete song from Cloudinary and database
+app.delete("/songs/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    console.log("🗑️ Delete request for song ID:", id);
+
+    let connection;
+    try {
+      connection = await db.getConnection();
+      await connection.beginTransaction();
+
+      // 1. Find the song first to get Cloudinary public_id
+      const [songRows] = await connection.query(`
+        SELECT s.*, a.name as artist_name 
+        FROM songs s 
+        JOIN artists a ON s.artist_id = a.id 
+        WHERE s.id = ?
+      `, [id]);
+
+      if (songRows.length === 0) {
+        return res.status(404).json({ error: 'Song not found' });
+      }
+
+      const song = songRows[0];
+      console.log("🎵 Found song to delete:", song.title, "Cloudinary ID:", song.public_id);
+
+      // 2. Delete from Cloudinary if public_id exists
+      let cloudinaryDeleted = false;
+      if (song.public_id) {
+        try {
+          const cloudinaryResult = await cloudinary.uploader.destroy(song.public_id, {
+            resource_type: 'video'
+          });
+
+          console.log('☁️ Cloudinary deletion result:', cloudinaryResult);
+
+          if (cloudinaryResult.result === 'ok') {
+            cloudinaryDeleted = true;
+            console.log("✅ Successfully deleted from Cloudinary");
+          } else {
+            console.warn('⚠️ Cloudinary deletion may have failed:', cloudinaryResult);
+          }
+        } catch (cloudinaryError) {
+          console.error('❌ Cloudinary deletion error:', cloudinaryError);
+          // Continue with database deletion even if Cloudinary fails
+        }
+      } else {
+        console.warn('⚠️ No public_id found for song, skipping Cloudinary deletion');
+      }
+
+      // 3. Delete from database
+      await connection.query('DELETE FROM songs WHERE id = ?', [id]);
+      await connection.commit();
+
+      console.log("✅ Song deleted from database");
+
+      res.json({
+        message: 'Song deleted successfully',
+        deletedSong: {
+          id: song.id,
+          title: song.title,
+          artist: song.artist_name,
+          mood: song.mood
+        },
+        cloudinaryDeleted: cloudinaryDeleted
+      });
+
+    } catch (dbError) {
+      if (connection) await connection.rollback();
+      console.log("❌ Database deletion error:", dbError);
+      throw dbError;
+    } finally {
+      if (connection) connection.release();
+    }
+
+  } catch (err) {
+    console.error('❌ Delete error:', err);
+    res.status(500).json({ error: 'Failed to delete song: ' + err.message });
   }
 });
 
@@ -275,12 +327,12 @@ app.post("/upload", upload.single("song"), async (req, res) => {
 app.get("/songs", async (req, res) => {
   try {
     const [rows] = await db.query(`
-      SELECT s.id, s.title, s.genre, s.duration, s.mood, s.url, 
+      SELECT s.id, s.title, s.genre, s.duration, s.mood, s.url, s.public_id,
              a.name as artist, al.title as album
       FROM songs s
       JOIN artists a ON s.artist_id = a.id
       LEFT JOIN albums al ON s.album_id = al.id
-      ORDER BY s.title
+      ORDER BY s.id DESC
     `);
     res.json(rows);
   } catch (err) {
@@ -293,14 +345,67 @@ app.get("/songs/:mood", async (req, res) => {
   try {
     const mood = req.params.mood;
     const [rows] = await db.query(`
-      SELECT s.id, s.title, s.genre, s.duration, s.mood, s.url, 
+      SELECT s.id, s.title, s.genre, s.duration, s.mood, s.url, s.public_id,
              a.name as artist, al.title as album
       FROM songs s
       JOIN artists a ON s.artist_id = a.id
       LEFT JOIN albums al ON s.album_id = al.id
       WHERE s.mood = ?
-      ORDER BY s.title
+      ORDER BY s.id DESC
     `, [mood]);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ✅ Get all artists (kept for compatibility)
+app.get("/artists", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT * FROM artists ORDER BY name");
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ✅ Get all albums (kept for compatibility)
+app.get("/albums", async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT a.*, ar.name as artist_name 
+      FROM albums a 
+      JOIN artists ar ON a.artist_id = ar.id 
+      ORDER BY a.title
+    `);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ✅ Search artists (kept for compatibility)
+app.get("/artists/search", async (req, res) => {
+  try {
+    const { q } = req.query;
+    const [rows] = await db.query(
+      "SELECT id, name FROM artists WHERE name LIKE ? LIMIT 10",
+      [`%${q}%`]
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ✅ Search albums (kept for compatibility)
+app.get("/albums/search", async (req, res) => {
+  try {
+    const { q } = req.query;
+    const [rows] = await db.query(
+      "SELECT id, title FROM albums WHERE title LIKE ? LIMIT 10",
+      [`%${q}%`]
+    );
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -317,7 +422,6 @@ app.post("/test-upload", upload.single("song"), async (req, res) => {
     return res.status(400).json({ error: "No file received in test" });
   }
 
-  // Simulate success
   res.json({
     message: "Test upload successful!",
     filename: req.file.originalname,
@@ -329,49 +433,24 @@ app.post("/test-upload", upload.single("song"), async (req, res) => {
 // ✅ Health check
 app.get("/", (req, res) => {
   res.json({
-    message: "Music Streaming API is running!",
+    message: "Music Journal API is running!",
     endpoints: {
-      upload: "POST /upload",
+      simpleUpload: "POST /upload-simple",
       songs: "GET /songs",
-      artists: "GET /artists",
+      songsByMood: "GET /songs/:mood",
+      deleteSong: "DELETE /songs/:id",
       test: "POST /test-upload"
-    }
+    },
+    features: "Mood-based journal upload system"
   });
 });
 
 const PORT = process.env.PORT || 5000;
 
-// ✅ Debug endpoint (move this before app.listen)
-app.post("/upload-debug", upload.single("song"), async (req, res) => {
-  console.log("🐛 DEBUG Upload request received");
-  console.log("📁 File:", req.file);
-  console.log("📝 Body:", req.body);
-
-  try {
-    // Test Cloudinary connection first
-    console.log("🔗 Testing Cloudinary connection...");
-
-    // Simple Cloudinary test
-    cloudinary.uploader.upload(
-      "https://res.cloudinary.com/demo/image/upload/sample.jpg",
-      { folder: "test" },
-      (error, result) => {
-        if (error) {
-          console.log("❌ Cloudinary test failed:", error);
-          return res.status(500).json({ error: `Cloudinary error: ${error.message}` });
-        }
-        console.log("✅ Cloudinary test passed");
-        res.json({ message: "Debug test passed", cloudinary: "working" });
-      }
-    );
-  } catch (err) {
-    console.log("❌ Debug endpoint error:", err);
-    res.status(500).json({ error: `Debug error: ${err.message}` });
-  }
-});
-
 // ✅ Start server
 app.listen(PORT, () => {
-  console.log(`🎵 Server running on http://localhost:${PORT}`);
+  console.log(`🎵 Music Journal Server running on http://localhost:${PORT}`);
   console.log(`📁 Cloudinary configured: ${process.env.CLOUD_NAME ? '✅' : '❌'}`);
+  console.log(`🎯 Simple upload available at: POST /upload-simple`);
+  console.log(`🗑️  Delete available at: DELETE /songs/:id`);
 });

@@ -1,0 +1,180 @@
+body,
+.app-container {
+    font-family: Arial, sans-serif;
+    background: #fff;
+    margin: 0;
+    padding: 0;
+    color: #222;
+}
+
+.app-header {
+    background: #fff;
+    color: #222;
+    padding: 20px 0;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+
+.app-title {
+    margin: 0 0 10px 0;
+}
+
+.app-nav button {
+    margin: 0 8px;
+    padding: 8px 16px;
+    background: #eee;
+    color: #222;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.app-nav .active {
+    background: #007bff;
+    color: #fff;
+}
+
+.app-main {
+    padding: 20px;
+    min-height: 60vh;
+    background: #fff;
+}
+
+.song-list-header,
+.upload-form-inner,
+.player-header {
+    margin-bottom: 20px;
+}
+
+.songs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+}
+
+.song-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+    padding: 16px;
+    margin-bottom: 10px;
+    border: 1px solid #eee;
+}
+
+.song-header h3 {
+    margin: 0;
+}
+
+.song-info p {
+    margin: 4px 0;
+}
+
+.song-actions {
+    margin-top: 10px;
+}
+
+.upload-form {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 60vh;
+    background: #fff;
+}
+
+.upload-form-inner {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+    padding: 24px;
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid #eee;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.upload-btn,
+.debug-buttons button,
+.mode-toggle button {
+    margin-top: 8px;
+    padding: 8px 16px;
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.upload-btn:disabled,
+.debug-buttons button:disabled,
+.mode-toggle button:disabled {
+    background: #aaa;
+    cursor: not-allowed;
+}
+
+.message {
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+.player {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+    padding: 24px;
+    max-width: 400px;
+    margin: 40px auto;
+    border: 1px solid #eee;
+    color: #222;
+}
+
+.player-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.player-controls {
+    margin-top: 16px;
+}
+
+.progress-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.control-buttons {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 10px;
+}
+
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.player-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.loading,
+.error,
+.no-songs {
+    color: #222;
+    background: #fff;
+}

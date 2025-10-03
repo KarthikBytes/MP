@@ -1,33 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import SongList from '../pages/SongList';
 import UploadForm from '../pages/UploadForm';
 import Player from '../pages/Player';
-import '../pages/App.css';
+import '../basic.css';
 
 function App() {
   const [currentSong, setCurrentSong] = useState(null);
   const [view, setView] = useState('songs');
-  const [theme, setTheme] = useState('light');
-
-  // Load theme from localStorage on component mount
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    setTheme(savedTheme);
-    document.documentElement.setAttribute('data-theme', savedTheme);
-  }, []);
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-  };
 
   return (
-    <div className="app">
+    <div className="app-container">
       <header className="app-header">
-        <h1>🎵 Music Stream</h1>
-        <nav>
+        <h1 className="app-title">🎵 Music Stream</h1>
+        <nav className="app-nav">
           <button
             className={view === 'songs' ? 'active' : ''}
             onClick={() => setView('songs')}
@@ -40,17 +25,10 @@ function App() {
           >
             Upload Song
           </button>
-          <button 
-            className="theme-toggle" 
-            onClick={toggleTheme}
-            title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-          >
-            {theme === 'light' ? '🌙' : '☀️'}
-          </button>
         </nav>
       </header>
 
-      <main className="main-content">
+      <main className="app-main">
         {view === 'songs' ? (
           <SongList onSongSelect={setCurrentSong} />
         ) : (
@@ -59,10 +37,12 @@ function App() {
       </main>
 
       {currentSong && (
-        <Player
-          song={currentSong}
-          onClose={() => setCurrentSong(null)}
-        />
+        <div className="player-overlay">
+          <Player
+            song={currentSong}
+            onClose={() => setCurrentSong(null)}
+          />
+        </div>
       )}
     </div>
   );

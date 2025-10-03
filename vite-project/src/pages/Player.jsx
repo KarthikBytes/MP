@@ -63,15 +63,15 @@ function Player({ song, onClose }) {
     <div className="player">
       <div className="player-header">
         <h3>Now Playing</h3>
-        <button className="close-btn" onClick={onClose}>✕</button>
+        <button onClick={onClose}>✕</button>
       </div>
 
       <div className="player-content">
         <div className="song-details">
           <h4>{song.title}</h4>
-          <p className="artist">🎤 {song.artist}</p>
-          <p className="album">💿 {song.album || 'Single'}</p>
-          <p className="meta">🎵 {song.genre} • ⏱️ {formatTime(song.duration)}</p>
+          <p>🎤 {song.artist}</p>
+          <p>💿 {song.album || 'Single'}</p>
+          <p>🎵 {song.genre} • ⏱️ {formatTime(song.duration)}</p>
         </div>
 
         <audio
@@ -82,23 +82,21 @@ function Player({ song, onClose }) {
 
         <div className="player-controls">
           <div className="progress-bar">
-            <span className="time current">{formatTime(currentTime)}</span>
-            <div className="seek-container">
+            <span>{formatTime(currentTime)}</span>
+            <div>
               <input
                 type="range"
                 min="0"
                 max={audioRef.current?.duration || 0}
                 value={currentTime}
                 onChange={handleSeek}
-                className="seek-bar"
-                style={{ background: `linear-gradient(to right, #764ba2 0%, #764ba2 ${getProgressPercentage()}%, #e0e0e0 ${getProgressPercentage()}%, #e0e0e0 100%)` }}
               />
             </div>
-            <span className="time total">{formatTime(audioRef.current?.duration || 0)}</span>
+            <span>{formatTime(audioRef.current?.duration || 0)}</span>
           </div>
 
           <div className="control-buttons">
-            <button onClick={togglePlay} className="play-pause-btn">
+            <button onClick={togglePlay}>
               {isPlaying ? '⏸️ Pause' : '▶️ Play'}
             </button>
 
@@ -111,9 +109,8 @@ function Player({ song, onClose }) {
                 step="0.1"
                 value={volume}
                 onChange={handleVolume}
-                className="volume-bar"
               />
-              <span className="volume-text">{Math.round(volume * 100)}%</span>
+              <span>{Math.round(volume * 100)}%</span>
             </div>
           </div>
         </div>
